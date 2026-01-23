@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Приключения в джунглата - БИНГО</title>
+    <style>
+        /* ОСНОВЕН ДИЗАЙН НА ИГРАТА */
+        :root {
+            --wood-dark: #3e2723;
+            --jungle-bg: #e8f5e9;
+            --accent-orange: #ff6d00;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100vh;
+            font-family: 'Arial Black', sans-serif;
+            background: #1b5e20; 
+            background: url('Приключения в джунглата.png') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
+        }
+
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 5000;
+            text-align: center;
+        }
+
+        .instructions-box {
+            background: white; border: 8px solid var(--accent-orange);
+            padding: 40px; border-radius: 30px; max-width: 700px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); margin-bottom: 30px;
+        }
+
+        .btn-3d {
+            padding: 20px 60px; font-size: 28px; border-radius: 50px; border: none;
+            cursor: pointer; font-weight: bold; margin: 15px;
+            transition: all 0.1s; text-transform: uppercase;
+        }
+        .btn-start { background: #4caf50; color: white; box-shadow: 0 10px #2e7d32; }
+        .btn-start:active { transform: translateY(5px); box-shadow: 0 5px #2e7d32; }
+        
+        /* Бутон за принтиране */
+        .btn-print { background: #2196f3; color: white; box-shadow: 0 10px #1976d2; font-size: 20px; padding: 15px 40px; }
+        .btn-print:active { transform: translateY(5px); box-shadow: 0 5px #1976d2; }
+
+        #game-container { display: none; height: 100vh; align-items: center; justify-content: space-around; padding: 20px; }
+
+        #lotto-sphere {
+            width: 480px; height: 480px; background: rgba(255,255,255,0.2);
+            border: 15px solid white; border-radius: 50%; position: relative; overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+        }
+
+        .ball {
+            position: absolute; width: 45px; height: 45px; 
+            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ffecd2 30%, #f2994a 80%, #e67e22 100%);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: #3e2723; font-weight: bold; font-size: 16px; box-shadow: 2px 4px 8px rgba(0,0,0,0.5);
+        }
+
+        #riddle-board {
+            width: 700px; height: 400px; background: #fffef0; border: 18px solid var(--wood-dark);
+            border-radius: 35px; display: flex; align-items: center; justify-content: center;
+            padding: 40px; box-sizing: border-box; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        #draw-btn-game {
+            background: var(--accent-orange); color: white; font-size: 35px;
+            padding: 25px 80px; border: none; border-radius: 60px;
+            box-shadow: 0 12px #bf360c; cursor: pointer; font-weight: bold; margin-top: 40px;
+        }
+        #draw-btn-game:disabled { background: #ccc; box-shadow: none; cursor: default; }
+
+        #history-screen, #history-content { display: none; } /* Скрити по подразбиране */
+
+        #history-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); z-index: 6000; padding: 50px; box-sizing: border-box;
+            flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 20px;
+            overflow-y: auto;
+        }
+        .history-card {
+            width: 120px; height: 120px; background: white; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center; font-size: 70px;
+        }
+        .close-history {
+            position: fixed; top: 20px; right: 20px; padding: 15px 30px;
+            background: var(--accent-orange); color: white; border: none; border-radius: 10px;
+            font-weight: bold; cursor: pointer;
+        }
+        .footer { position: absolute; bottom: 20px; width: 100%; text-align: center; color: #333; font-size: 14px; }
+
+        /* СТИЛОВЕ ЗА ПЕЧАТ (ДИРЕКТНО ОТ ВТОРИЯ ФАЙЛ) */
+        #print-area { display: none; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+            .page {
+                width: 210mm; height: 297mm; background: white; margin: 0;
+                padding: 10mm; box-sizing: border-box; display: flex; flex-direction: column;
+                justify-content: space-around; page-break-after: always;
+            }
+            .ticket {
+                width: 190mm; height: 132mm; border: 2px solid #999; border-radius: 12px;
+                display: flex; overflow: hidden; background: #fff !important;
+                box-shadow: none; box-sizing: border-box; margin-bottom: 5mm;
+            }
+            .sidebar {
+                width: 32mm; background: #e0e0e0 !important; color: #333;
+                display: flex; align-items: center; justify-content: center;
+                border-right: 1px solid #ccc; -webkit-print-color-adjust: exact;
+            }
+            .sidebar-text {
+                transform: rotate(-90deg); white-space: nowrap;
+                font-family: 'Arial Black', sans-serif; font-size: 30px;
+                text-transform: uppercase; letter-spacing: 2px;
+                text-align: center; line-height: 1.1;
+            }
+            .main-content { flex-grow: 1; padding: 12px; display: flex; flex-direction: column; }
+            .grid {
+                display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+                justify-items: center; align-items: center; flex-grow: 1;
+            }
+            .cell {
+                width: 42mm; height: 32mm; background: #fff; border: 1px solid #ddd;
+                border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            }
+            .icon-bg {
+                width: 28mm; height: 28mm; background: #f2f2f2 !important;
+                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                font-size: 50px; -webkit-print-color-adjust: exact;
+            }
+            .ticket-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; margin-bottom: 10px; }
+            .ticket-no { font-weight: bold; font-size: 18px; }
+            .footer-ticket { margin-top: 8px; font-size: 11px; color: #888; display: flex; justify-content: space-between; border-top: 1px solid #eee; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-screen">
+        <div class="instructions-box">
+            <h1 style="color: #2e7d32; font-size: 45px; margin-top: 0;">ЖИВОТНИ - БИНГО</h1>
+            <p style="font-size: 22px; color: #555;">Познай животното от гатанката и зачеркни в своя билет!</p>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <button class="btn-3d btn-start" onclick="startGame()">Старт</button>
+            <button class="btn-3d btn-print" onclick="prepareAndPrint()">Принтирай билети</button>
+        </div>
+        <div class="footer">Изработил: Дочка Кючукова | 2026</div>
+    </div>
+
+    <div id="game-container">
+        <div style="text-align:center;">
+            <div id="lotto-sphere"></div>
+            <button onclick="openHistory()" style="margin-top:20px; cursor:pointer; background:#fff; border:3px solid var(--wood-dark); border-radius:15px; padding:10px 20px; font-weight:bold;">📋 ПРОВЕРКА</button>
+        </div>
+        <div style="text-align:center;">
+            <div id="riddle-board">
+                <h2 id="riddle-text" style="font-size: 34px; color: #1b5e20; text-align: center;">Готови ли сте?</h2>
+            </div>
+            <button id="draw-btn-game" onclick="drawBall()">ИЗТЕГЛИ</button>
+        </div>
+        <div class="footer">Изработил: Дочка Кючукова</div>
+    </div>
+
+    <div id="history-screen">
+        <button class="close-history" onclick="closeHistory()">ВЪРНИ СЕ</button>
+        <div id="history-content" style="display:contents;"></div>
+    </div>
+
+    <div id="print-area"></div>
+
+    <script>
+        const animalsData = [
+            {q: "Пазя къщата и лая: Бау-бау!", a: "🐶"},
+            {q: "Давам мляко и казвам: Муууу!", a: "🐮"},
+            {q: "Обичам мед и спя в бърлога.", a: "🐻"},
+            {q: "Хитра съм и имам пухкава опашка.", a: "🦊"},
+            {q: "Имам дълги уши и ям моркови.", a: "🐰"},
+            {q: "Вия към луната в гората.", a: "🐺"},
+            {q: "Имам бодли и ставам на кълбо.", a: "🦔"},
+            {q: "Нося големи рога и тичам бързо.", a: "🦌"},
+            {q: "Мъркам и ловя мишки.", a: "🐱"},
+            {q: "Будя всички сутрин: Кукуригу!", a: "🐓"},
+            {q: "Имам хобот и големи уши.", a: "🐘"},
+            {q: "Аз съм царят на животните.", a: "🦁"},
+            {q: "Давам вълна за топли чорапи.", a: "🐑"},
+            {q: "Препускам бързо и имам грива.", a: "🐴"},
+            {q: "Опашката ми е навита накрая.", a: "🐷"},
+            {q: "Снасям яйца и кълва зрънца.", a: "🐔"},
+            {q: "Имам много дълга шия.", a: "🦒"},
+            {q: "Будна съм нощем: Ху-ху!", a: "🦉"},
+            {q: "Скачам по клоните и ям лешници.", a: "🐿️"},
+            {q: "На райета съм оцветена, в Африка съм аз родена.", a: "🦓"}
+        ];
+
+        const allIcons = animalsData.map(item => item.a);
+        let pool = [...animalsData];
+        const balls = [];
+        const sphere = document.getElementById('lotto-sphere');
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playHistoryStyleSound(f, d) {
+            if (!audioCtx) return;
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            o.frequency.value = f;
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            o.start(); o.stop(audioCtx.currentTime + d);
+        }
+
+        function startGame() {
+            initAudio();
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        // Инициализация на топките в сферата
+        for (let i = 0; i < 20; i++) {
+            const ballEl = document.createElement('div');
+            ballEl.className = 'ball'; ballEl.innerText = i + 1;
+            ballEl.style.left = Math.random() * 380 + 'px';
+            ballEl.style.top = Math.random() * 380 + 'px';
+            sphere.appendChild(ballEl);
+            balls.push({ el: ballEl, x: Math.random() * 2 - 1, y: Math.random() * 2 - 1, s: 1 });
+        }
+
+        function animate() {
+            balls.forEach(b => {
+                let curX = parseFloat(b.el.style.left), curY = parseFloat(b.el.style.top);
+                if (curX <= 0 || curX >= 410) b.x *= -1;
+                if (curY <= 0 || curY >= 410) b.y *= -1;
+                b.el.style.left = (curX + b.x * b.s) + 'px';
+                b.el.style.top = (curY + b.y * b.s) + 'px';
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function drawBall() {
+            if (pool.length === 0) return alert("Всички гатанки са изтеглени!");
+            const btn = document.getElementById('draw-btn-game');
+            btn.disabled = true;
+
+            const mixSound = setInterval(() => {
+                playHistoryStyleSound(150 + Math.random() * 250, 0.05);
+            }, 80);
+
+            balls.forEach(b => b.s = 18);
+            
+            setTimeout(() => {
+                clearInterval(mixSound);
+                balls.forEach(b => b.s = 1);
+                playHistoryStyleSound(440, 0.2);
+
+                const idx = Math.floor(Math.random() * pool.length);
+                const picked = pool.splice(idx, 1)[0];
+                document.getElementById('riddle-text').innerText = picked.q;
+                
+                const card = document.createElement('div');
+                card.className = 'history-card'; card.innerText = picked.a;
+                document.getElementById('history-content').appendChild(card);
+
+                const visible = balls.filter(b => b.el.style.display !== 'none');
+                if (visible.length) visible[0].el.style.display = 'none';
+                
+                btn.disabled = false;
+            }, 1200);
+        }
+
+        function openHistory() { document.getElementById('history-screen').style.display = 'flex'; }
+        function closeHistory() { document.getElementById('history-screen').style.display = 'none'; }
+
+        // ФУНКЦИЯ ЗА ГЕНЕРИРАНЕ И ПЕЧАТ НА БИЛЕТИ
+        function prepareAndPrint() {
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = ''; // Изчистване
+            
+            // Генериране на 10 страници (общо 20 билета)
+            for (let p = 0; p < 10; p++) {
+                const page = document.createElement('div');
+                page.className = 'page';
+                
+                for (let t = 0; t < 2; t++) {
+                    const ticketID = (p * 2) + t + 1;
+                    const shuffled = [...allIcons].sort(() => 0.5 - Math.random()).slice(0, 9);
+                    
+                    page.innerHTML += `
+                        <div class="ticket">
+                            <div class="sidebar">
+                                <div class="sidebar-text">БИНГО<br>СЛЕДОТЪРСАЧ</div>
+                            </div>
+                            <div class="main-content">
+                                <div class="ticket-header">
+                                    <div class="ticket-no">БИЛЕТ №${ticketID}</div>
+                                    <div style="font-size: 11px; color: #666; font-family: sans-serif;">Слушай внимателно и зачеркни!</div>
+                                </div>
+                                <div class="grid">
+                                    ${shuffled.map(a => `
+                                        <div class="cell">
+                                            <div class="icon-bg">${a}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <div class="footer-ticket">
+                                    <span style="font-family: sans-serif;">Изработил: Дочка Кючукова</span>
+                                    <span style="font-family: sans-serif;">Бинго Игри 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                printArea.appendChild(page);
+            }
+            window.print();
+        }
+    </script>
+</body>
+</html>
